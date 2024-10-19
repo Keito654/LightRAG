@@ -1,0 +1,22 @@
+[project]
+name = "lightrag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate>=1.0.1",
+    "aioboto3>=13.2.0",
+    "graspologic>=3.4.1",
+    "hnswlib>=0.8.0",
+    "nano-vectordb>=0.0.4",
+    "networkx>=3.4.1",
+    "ollama>=0.3.3",
+    "openai>=1.52.0",
+    "python-dotenv>=1.0.1",
+    "tenacity>=9.0.0",
+    "tiktoken>=0.8.0",
+    "torch>=2.5.0",
+    "transformers>=4.45.2",
+    "xxhash>=3.5.0",
+]
