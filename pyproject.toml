@@ -9,6 +9,7 @@ dependencies = [
     "aioboto3>=13.2.0",
     "graspologic>=3.4.1",
     "hnswlib>=0.8.0",
+    "jsonlines>=4.0.0",
     "nano-vectordb>=0.0.4",
     "networkx>=3.4.1",
     "ollama>=0.3.3",
