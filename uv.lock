@@ -678,6 +678,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "accelerate" },
     { name = "aioboto3" },
+    { name = "aiohttp" },
     { name = "graspologic" },
     { name = "hnswlib" },
     { name = "jsonlines" },
@@ -697,6 +698,7 @@ dependencies = [
 requires-dist = [
     { name = "accelerate", specifier = ">=1.0.1" },
     { name = "aioboto3", specifier = ">=13.2.0" },
+    { name = "aiohttp", specifier = ">=3.10.10" },
     { name = "graspologic", specifier = ">=3.4.1" },
     { name = "hnswlib", specifier = ">=0.8.0" },
     { name = "jsonlines", specifier = ">=4.0.0" },
