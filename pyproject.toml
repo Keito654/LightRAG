@@ -16,6 +16,7 @@ dependencies = [
     "ollama>=0.3.3",
     "openai>=1.52.0",
     "python-dotenv>=1.0.1",
+    "pyvis>=0.3.2",
     "tenacity>=9.0.0",
     "tiktoken>=0.8.0",
     "torch>=2.5.0",
