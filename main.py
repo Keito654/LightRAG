@@ -110,7 +110,41 @@ book1 = open("./source/book1.txt", encoding="utf-8")
 
 rag.insert(book1.read())
 
-query_text = "コンテクストとして渡すCOBOLのコードベースから、概要がわかる仕様書を作成してください。"
+query_text = """Create a detailed code document that outlines the provided COBOL codebase. The documentation should explain each section of the code, describe the key variables and their purposes, and include a general overview of the program's functionality. 
+
+# Steps
+
+1. **General Overview**: Provide a high-level summary of the COBOL program, explaining its primary purpose and functionality.
+   
+2. **Code Segmentation**:
+   - Divide the codebase into logical sections, such as Identification Division, Environment Division, Data Division, and Procedure Division.
+   - Describe the purpose and functionality of each section.
+
+3. **Variables and Fields**:
+   - List and describe key variables, constants, and data fields used across the program.
+   - Explain their types, usages, and initial values where applicable.
+
+4. **Procedures and Logic**:
+   - Document any procedures, subroutines, or significant logical structures.
+   - Outline the flow of logic and decision-making points in the program.
+
+5. **Input and Output**:
+   - Explain the input requirements and outputs produced by the program.
+   - Include details on any file handling or database interactions.
+
+6. **Error Handling**:
+   - Describe how the program handles exceptions or errors, if applicable.
+
+# Output Format
+
+The output should be a structured document, using headings or bullet points for clarity. Each section should be concise and focus on explaining the relevant parts of the codebase.
+
+# Notes
+
+- Ensure clarity and readability in the documentation to make it accessible to individuals who may not be familiar with COBOL.
+- Use consistent terminology to avoid confusion.
+- Include code snippets where necessary to illustrate points, but keep them minimal and focused.
+"""
 
 # print("Result (Naive):")
 # print(rag.query(query_text, param=QueryParam(mode="naive")))
