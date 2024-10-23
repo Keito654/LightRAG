@@ -1,7 +1,8 @@
 __pycache__
 *.egg-info
 dickens/
-book.txt
+out
+source
 lightrag-dev/
 .idea/
 dist/

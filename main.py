@@ -93,7 +93,7 @@ async def test_funcs():
 
 asyncio.run(test_funcs())
 
-embedding_dimension = 3072
+embedding_dimension = 1536
 
 rag = LightRAG(
     working_dir=WORKING_DIR,
@@ -105,12 +105,12 @@ rag = LightRAG(
     ),
 )
 
-book1 = open("./book1.txt", encoding="utf-8")
-book2 = open("./book2.txt", encoding="utf-8")
+book1 = open("./source/book1.txt", encoding="utf-8")
+# book2 = open("./book2.txt", encoding="utf-8")
 
-rag.insert([book1.read(), book2.read()])
+rag.insert(book1.read())
 
-query_text = "２つの文のメインテーマをそれぞれ端的に教えてください"
+query_text = "コンテクストとして渡すCOBOLのコードベースから、概要がわかる仕様書を作成してください。"
 
 # print("Result (Naive):")
 # print(rag.query(query_text, param=QueryParam(mode="naive")))
@@ -119,7 +119,9 @@ query_text = "２つの文のメインテーマをそれぞれ端的に教えて
 # print(rag.query(query_text, param=QueryParam(mode="local")))
 
 print("\nResult (Global):")
-print(rag.query(query_text, param=QueryParam(mode="global")))
+result = rag.query(query_text, param=QueryParam(mode="global"))
+with open("./out/out.txt", "w", encoding="utf-8") as f:
+    f.write(result)
 
 # print("\nResult (Hybrid):")
 # print(rag.query(query_text, param=QueryParam(mode="hybrid")))
