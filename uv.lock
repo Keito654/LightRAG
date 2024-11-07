@@ -754,6 +754,7 @@ dependencies = [
     { name = "hnswlib" },
     { name = "jsonlines" },
     { name = "nano-vectordb" },
+    { name = "neo4j" },
     { name = "networkx" },
     { name = "ollama" },
     { name = "openai" },
@@ -775,6 +776,7 @@ requires-dist = [
     { name = "hnswlib", specifier = ">=0.8.0" },
     { name = "jsonlines", specifier = ">=4.0.0" },
     { name = "nano-vectordb", specifier = ">=0.0.4" },
+    { name = "neo4j", specifier = ">=5.26.0" },
     { name = "networkx", specifier = ">=3.4.1" },
     { name = "ollama", specifier = ">=0.3.3" },
     { name = "openai", specifier = ">=1.52.0" },
@@ -944,6 +946,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/31/a2/6be354a569caf930370aa6683975095885148e3a30fb4cf29c0c227d5676/nano_vectordb-0.0.4.tar.gz", hash = "sha256:4da362471fd3a52c8ad49b66f4e0a76c3e9dca09524eeb8221aa819f2d328b02", size = 4971 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bb/b2/d80b22b9e76d0db54f9ad9176d6eced0ff69fc90aade23f308613c9a3dff/nano_vectordb-0.0.4-py3-none-any.whl", hash = "sha256:13ac63d4620687a06ef8efb10aaa74444d2f835f82490ac6a0e12a09fca15446", size = 4490 },
+]
+
+[[package]]
+name = "neo4j"
+version = "5.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytz" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/62/7a6d0b90da5fb2a68c61996baeade66ff030b3f1036263e649a50e80e9d0/neo4j-5.26.0.tar.gz", hash = "sha256:51b25ba127b7b9fdae1ddf48ae697ddfab331e60f4b6d8488d1fc1f74ec60dcc", size = 224127 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/58/a8/e8bafaaf3a2fa2391c8c86ab4e8dec2aff3f2fd35b773476580ccca26e4c/neo4j-5.26.0-py3-none-any.whl", hash = "sha256:511a6a9468ca89b521bf686f885a2070acc462b1d09821d43710bd477acdf11e", size = 302024 },
 ]
 
 [[package]]

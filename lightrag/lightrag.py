@@ -58,9 +58,8 @@ def always_get_an_event_loop() -> asyncio.AbstractEventLoop:
         loop = asyncio.get_running_loop()
     except RuntimeError:
         logger.info("Creating a new event loop in main thread.")
-        # loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(loop)
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     return loop
 
 

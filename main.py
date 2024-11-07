@@ -6,6 +6,7 @@ import numpy as np
 from dotenv import load_dotenv
 import aiohttp
 import logging
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 
@@ -105,10 +106,21 @@ rag = LightRAG(
     ),
 )
 
-book1 = open("./source/book1.txt", encoding="utf-8")
-# book2 = open("./book2.txt", encoding="utf-8")
+source_dir = Path('source')
+file_contents = []
 
-rag.insert(book1.read())
+for file_path in source_dir.rglob('*'):  # 再帰的にすべてのファイルを取得
+    if file_path.is_file():
+        try:
+            with file_path.open('r', encoding='utf-8') as f:
+                content = f.read()
+                file_contents.append(content) 
+                # ファイルの内容を処理する
+                print(f"読み取ったファイル: {file_path}")
+        except Exception as e:
+            print(f"ファイル {file_path} の読み取り中にエラーが発生しました: {e}")
+
+rag.insert(file_contents)
 
 with open("./prompt/prompt.txt", encoding="utf-8") as f:
     query_text = f.read()
