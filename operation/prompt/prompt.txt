@@ -1,0 +1,1 @@
+Is there anywhere in this code that limits the length of the URL or the length of the query string? Please answer in Japanese.
