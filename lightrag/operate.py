@@ -15,6 +15,7 @@ from .utils import (
     pack_user_ass_to_openai_messages,
     split_string_by_multi_markers,
     truncate_list_by_token_size,
+    process_combine_contexts,
 )
 from .base import (
     BaseGraphStorage,
@@ -465,7 +466,9 @@ async def _build_local_query_context(
     text_chunks_db: BaseKVStorage[TextChunkSchema],
     query_param: QueryParam,
 ):
+
     results = await entities_vdb.query(query, top_k=query_param.top_k)
+
     if not len(results):
         return None
     node_datas = await asyncio.gather(
@@ -480,7 +483,7 @@ async def _build_local_query_context(
         {**n, "entity_name": k["entity_name"], "rank": d}
         for k, n, d in zip(results, node_datas, node_degrees)
         if n is not None
-    ]
+    ]#what is this text_chunks_db doing.  dont remember it in airvx.  check the diagram.
     use_text_units = await _find_most_related_text_unit_from_entities(
         node_datas, query_param, text_chunks_db, knowledge_graph_inst
     )
@@ -906,7 +909,6 @@ async def hybrid_query(
                 .strip()
             )
             result = "{" + result.split("{")[1].split("}")[0] + "}"
-
             keywords_data = json.loads(result)
             hl_keywords = keywords_data.get("high_level_keywords", [])
             ll_keywords = keywords_data.get("low_level_keywords", [])
@@ -926,6 +928,7 @@ async def hybrid_query(
             query_param,
         )
 
+
     if hl_keywords:
         high_level_context = await _build_global_query_context(
             hl_keywords,
@@ -935,6 +938,7 @@ async def hybrid_query(
             text_chunks_db,
             query_param,
         )
+
 
     context = combine_contexts(high_level_context, low_level_context)
 
@@ -1003,35 +1007,28 @@ def combine_contexts(high_level_context, low_level_context):
         ll_entities, ll_relationships, ll_sources = extract_sections(low_level_context)
 
     # Combine and deduplicate the entities
-    combined_entities_set = set(
-        filter(None, hl_entities.strip().split("\n") + ll_entities.strip().split("\n"))
-    )
-    combined_entities = "\n".join(combined_entities_set)
-
+    combined_entities = process_combine_contexts(hl_entities, ll_entities)
+    
     # Combine and deduplicate the relationships
-    combined_relationships_set = set(
-        filter(
-            None,
-            hl_relationships.strip().split("\n") + ll_relationships.strip().split("\n"),
-        )
-    )
-    combined_relationships = "\n".join(combined_relationships_set)
+    combined_relationships = process_combine_contexts(hl_relationships, ll_relationships)
 
     # Combine and deduplicate the sources
-    combined_sources_set = set(
-        filter(None, hl_sources.strip().split("\n") + ll_sources.strip().split("\n"))
-    )
-    combined_sources = "\n".join(combined_sources_set)
+    combined_sources = process_combine_contexts(hl_sources, ll_sources)
 
     # Format the combined context
     return f"""
 -----Entities-----
 ```csv
 {combined_entities}
+```
 -----Relationships-----
+```csv
 {combined_relationships}
+```
 -----Sources-----
+```csv
 {combined_sources}
+``
 """
 
 
@@ -1048,6 +1045,7 @@ async def naive_query(
         return PROMPTS["fail_response"]
     chunks_ids = [r["id"] for r in results]
     chunks = await text_chunks_db.get_by_ids(chunks_ids)
+
 
     maybe_trun_chunks = truncate_list_by_token_size(
         chunks,
