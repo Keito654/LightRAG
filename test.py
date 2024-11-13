@@ -1,6 +1,6 @@
 import os
 from lightrag import LightRAG, QueryParam
-from lightrag.llm import gpt_4o_mini_complete, gpt_4o_complete
+from lightrag.llm import gpt_4o_mini_complete
 #########
 # Uncomment the below two lines if running in a jupyter notebook to handle the async nature of rag.insert()
 # import nest_asyncio
@@ -18,7 +18,7 @@ rag = LightRAG(
     # llm_model_func=gpt_4o_complete  # Optionally, use a stronger model
 )
 
-with open("./book.txt") as f:
+with open("./dickens/book.txt", "r", encoding="utf-8") as f:
     rag.insert(f.read())
 
 # Perform naive search
