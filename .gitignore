@@ -3,6 +3,7 @@ __pycache__
 dickens/
 out
 source
+prompt
 lightrag-dev/
 .idea/
 dist/
