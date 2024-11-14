@@ -138,7 +138,7 @@ async def query():
         result = await loop.run_in_executor(
             None, lambda: rag.query(query_text, param=QueryParam(mode="hybrid"))
         )
-        with open("./operation/out/out.txt", "w", encoding="utf-8") as f:
+        with open("./operation/out/out.md", "w", encoding="utf-8") as f:
             f.write(result)
         print("successfully query")
     except Exception as e:
