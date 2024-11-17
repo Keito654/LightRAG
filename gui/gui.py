@@ -1,5 +1,6 @@
 import os
 import sys
+from dotenv import load_dotenv
 import requests
 import asyncio
 from contextlib import contextmanager
@@ -10,19 +11,21 @@ import networkx as nx
 import time
 import streamlit as st
 
+load_dotenv()
+
 # Define constants first
-DEFAULT_LLM_MODEL = "gpt-4o-mini-2024-07-18"
-DEFAULT_EMBEDDER_MODEL = "text-embedding-ada-002"
+DEFAULT_LLM_MODEL = "gpt-4o"
+DEFAULT_EMBEDDER_MODEL = "text-embedding-3-small"
 
 # Add model options constants
 AVAILABLE_LLM_MODELS = [
     DEFAULT_LLM_MODEL,
-    "gpt-4o-mini"  # Legacy model option
+    "gpt-4o-mini"
 ]
 
 AVAILABLE_EMBEDDER_MODELS = [
     DEFAULT_EMBEDDER_MODEL,
-    "text-embedding-3-small"  # New smaller model option
+    "text-embedding-3-large"
 ]
 
 # Initialize session state first, before anything else
@@ -88,13 +91,17 @@ sys.path.insert(0, project_root)
 
 # Import LightRAG packages
 from lightrag import LightRAG, QueryParam
-from lightrag.llm import gpt_4o_mini_complete, openai_embedding
+from lightrag.llm import azure_openai_complete_if_cache, azure_openai_embedding
 from lightrag.utils import EmbeddingFunc, logger, set_logger
 
 # Configure logging
 working_dir = "./dickens"
 if not os.path.exists(working_dir):
     os.makedirs(working_dir)
+else:
+    import shutil
+    shutil.rmtree(working_dir)
+    os.mkdir(working_dir)
     
 set_logger(os.path.join(working_dir, "lightrag.log"))
 logger.setLevel(logging.DEBUG)
@@ -103,69 +110,121 @@ logger.setLevel(logging.DEBUG)
 import streamlit as st
 
 # Move show_api_key_form before other functions that use it
-@st.dialog("OpenAI API Key")
+@st.dialog("Azure OpenAI API Key")
 def show_api_key_form(key_suffix=""):
-    """Display the API key input dialog."""
+    """Display the Azure OpenAI API settings input dialog."""
     # Only show dialog if not initialized and no valid key exists
-    if st.session_state.initialized or get_api_key():
+    if st.session_state.initialized or get_azure_api_settings():
         return
         
-    st.markdown("### Enter OpenAI API Key")
-    st.markdown("Get your API key from [OpenAI Platform](https://platform.openai.com/account/api-keys)")
+    st.markdown("### Enter Azure OpenAI API Settings")
+    st.markdown("Get your API settings from [Azure Portal](https://portal.azure.com)")
     
     new_api_key = st.text_input(
         "API Key:",
         type="password",
-        help="Enter your OpenAI API key starting with 'sk-'"
+        help="Enter your Azure OpenAI API key"
     )
     
+    new_endpoint = st.text_input(
+        "Endpoint:",
+        help="Enter your Azure OpenAI endpoint URL"
+    )
+    
+    new_api_version = st.text_input(
+        "API Version:",
+        help="Enter your Azure OpenAI API version"
+    )
+    
+    # new_embedding_api_version = st.text_input(
+    #    "Embedding API Version:",
+    #    help="Enter your Azure OpenAI Embedding API version"
+    #)
+    
     if st.button("Save API Key"):
-        if new_api_key and new_api_key.startswith("sk-"):
+        if new_api_key and new_endpoint and new_api_version:
             try:
-                # Store key and initialize
-                st.session_state.openai_api_key = new_api_key
-                add_activity_log("[+] API key saved")
+                # Store settings and initialize
+                st.session_state.azure_api_settings = {
+                    "api_key": new_api_key,
+                    "endpoint": new_endpoint,
+                }
+                os.environ["AZURE_OPENAI_API_VERSION"] = new_api_version
+
+                add_activity_log("[+] Azure API settings saved")
                 init_rag()
-                st.success("API key saved successfully!")
+                st.success("Azure API settings saved successfully!")
                 st.rerun()
             except Exception as e:
-                logger.error(f"Error saving API key: {str(e)}")
-                add_activity_log(f"[!] API key error: {str(e)}")
-                st.error(f"Error saving API key: {str(e)}")
+                logger.error(f"Error saving Azure API settings: {str(e)}")
+                add_activity_log(f"[!] Azure API settings error: {str(e)}")
+                st.error(f"Error saving Azure API settings: {str(e)}")
         else:
-            st.error("Invalid API key format. Key should start with 'sk-'")
+            st.error("All fields are required.")
 
-def get_api_key():
-    """Securely retrieve OpenAI API key."""
-    # First check environment variable
-    env_key = os.getenv("OPENAI_API_KEY")
-    if env_key and env_key.startswith("sk-"):
-        # Store environment key in session state if not already there
-        if "openai_api_key" not in st.session_state or st.session_state.openai_api_key != env_key:
-            st.session_state.openai_api_key = env_key
-        return env_key
-        
-    # Then check session state
-    if "openai_api_key" in st.session_state and st.session_state.openai_api_key.startswith("sk-"):
-        return st.session_state.openai_api_key
+
+def get_azure_api_settings():
+    """Securely retrieve Azure OpenAI API settings."""
+    # Check environment variables first
+    env_settings = {
+        "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
+        "endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
+        "api_version": os.getenv("AZURE_OPENAI_API_VERSION"),
+        "embedding_api_version": os.getenv("AZURE_EMBEDDING_API_VERSION")
+    }
     
-    # No valid key found
-    add_activity_log("[-] No valid API key found")
-    logger.warning("No valid API key found")
+    # Check if all settings are available in environment variables
+    if all(env_settings.values()):
+        # Store environment settings in session state if not already there
+        if "azure_api_settings" not in st.session_state or st.session_state.azure_api_settings != env_settings:
+            st.session_state.azure_api_settings = env_settings
+        return env_settings
+    
+    # Then check session state
+    if "azure_api_settings" in st.session_state and all(st.session_state.azure_api_settings.values()):
+        return st.session_state.azure_api_settings
+    
+    # No valid settings found
+    add_activity_log("[-] No valid Azure API settings found")
+    logger.warning("No valid Azure API settings found")
     return None
+
+async def azure_openai_4o_complete(
+    prompt, system_prompt=None, history_messages=[], **kwargs
+) -> str:
+    return await azure_openai_complete_if_cache(
+        "gpt-4o",
+        prompt,
+        system_prompt=system_prompt,
+        history_messages=history_messages,
+        **kwargs,
+    )
+
+async def azure_openai_4o_mini_complete(
+    prompt, system_prompt=None, history_messages=[], **kwargs
+) -> str:
+    return await azure_openai_complete_if_cache(
+        "gpt-4o-mini",
+        prompt,
+        system_prompt=system_prompt,
+        history_messages=history_messages,
+        **kwargs,
+    )
 
 def get_llm_config(model_name):
     """Get the LLM configuration based on model name."""
-    if model_name in [DEFAULT_LLM_MODEL, "gpt-4o-mini"]:
-        return gpt_4o_mini_complete, model_name
+    if model_name in "gpt-4o":
+        return azure_openai_4o_complete, model_name
+    elif model_name == "gpt-4o-mini":
+        return azure_openai_4o_mini_complete, model_name
     else:
         raise ValueError(f"Unsupported LLM model: {model_name}")
 
 def get_embedding_config(model_name):
     """Get the embedding configuration based on model name."""
     embedding_configs = {
-        "text-embedding-ada-002": {
-            "dim": 1536,
+        "text-embedding-3-large": {
+            "dim": 3072,
             "max_tokens": 8192
         },
         "text-embedding-3-small": {
@@ -178,17 +237,18 @@ def get_embedding_config(model_name):
         raise ValueError(f"Unsupported embedding model: {model_name}")
         
     config = embedding_configs[model_name]
-    api_key = get_api_key()  # Get API key securely
-    if not api_key:
-        raise ValueError("OpenAI API key not found")
+    api_settings = get_azure_api_settings()  # Get API key securely
+    if not api_settings:
+        raise ValueError("Azure OpenAI API settings not found")
         
     return EmbeddingFunc(
         embedding_dim=config["dim"],
         max_token_size=config["max_tokens"],
-        func=lambda texts: openai_embedding(
+        func=lambda texts: azure_openai_embedding(
             texts,
             model=model_name,
-            api_key=api_key
+            api_key=api_settings["api_key"],
+            base_url=api_settings["endpoint"]
         )
     )
 
@@ -200,8 +260,8 @@ def init_rag():
         os.makedirs(working_dir)
     
     # Get and validate API key
-    api_key = get_api_key()
-    if not api_key:  # Simplified check
+    api_settings = get_azure_api_settings()
+    if not api_settings:  # Simplified check
         show_api_key_form("init")
         return False
     
@@ -213,7 +273,8 @@ def init_rag():
     llm_kwargs = {
         "temperature": st.session_state.settings["temperature"],
         "system_prompt": st.session_state.settings["system_prompt"],
-        "api_key": api_key  # Use key directly
+        "api_key": api_settings["api_key"],
+        "base_url": api_settings["endpoint"],
     }
     
     st.session_state.rag = LightRAG(
@@ -283,9 +344,9 @@ def add_activity_log(message: str):
 def show_insert_dialog():
     """Dialog for inserting records from various sources."""
     # First check if we have a valid API key
-    api_key = get_api_key()
-    if not api_key:
-        st.error("Please provide your OpenAI API key in Settings first.")
+    api_settings = get_azure_api_settings()
+    if not api_settings:
+        st.error("Please provide your Azure OpenAI settings in Settings first.")
         return
         
     tags = st.text_input(
@@ -706,12 +767,12 @@ with chat_container:
 def rewrite_prompt(prompt: str) -> str:
     """Rewrite the user prompt into a templated format using OpenAI."""
     try:
-        from openai import OpenAI
-        api_key = get_api_key()  # Get API key using our utility function
-        if not api_key:
-            raise ValueError("OpenAI API key not found")
+        from openai import AzureOpenAI
+        api_settings = get_azure_api_settings()  # Get API key using our utility function
+        if not api_settings:
+            raise ValueError("Azure OpenAI settings not found")
             
-        client = OpenAI(api_key=api_key)
+        client = AzureOpenAI(api_key=api_settings["api_key"], azure_endpoint=api_settings["endpoint"], api_version=os.getenv("AZURE_OPENAI_API_VERSION"))
         
         system_instruction = f"""
         You are a prompt engineering assistant. Your task is to rewrite user prompts into a templated format.
@@ -736,7 +797,7 @@ def rewrite_prompt(prompt: str) -> str:
         """
 
         response = client.chat.completions.create(
-            model="gpt-4",  # Using GPT-4 for better prompt engineering
+            model="gpt-4o",  # Using GPT-4 for better prompt engineering
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": f"Rewrite this prompt: {prompt}"}
@@ -760,8 +821,8 @@ def rewrite_prompt(prompt: str) -> str:
 def handle_chat_input():
     """Handle chat input and generate AI responses."""
     # Check for API key first
-    api_key = get_api_key()
-    if not api_key:
+    api_settings = get_azure_api_settings()
+    if not api_settings:
         show_api_key_form()
         return
 
