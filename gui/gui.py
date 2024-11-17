@@ -92,7 +92,7 @@ sys.path.insert(0, project_root)
 # Import LightRAG packages
 from lightrag import LightRAG, QueryParam
 from lightrag.llm import azure_openai_complete_if_cache, azure_openai_embedding
-from lightrag.utils import EmbeddingFunc, logger, set_logger
+from lightrag.utils import EmbeddingFunc, logger
 
 # Configure logging
 working_dir = "./dickens"
@@ -103,8 +103,7 @@ else:
     shutil.rmtree(working_dir)
     os.mkdir(working_dir)
     
-set_logger(os.path.join(working_dir, "lightrag.log"))
-logger.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Rest of the imports
 import streamlit as st
@@ -915,9 +914,11 @@ def handle_insert(content: str, tags: str = ""):
 
         # Generate a hash for logging
         content_hash = xxhash.xxh64(content.encode()).hexdigest()[:12]
-        
-        # Insert the content
-        st.session_state.rag.insert(content)
+
+        # Show loading spinner while inserting content
+        with st.spinner('Inserting content...'):
+            # Insert the content
+            st.session_state.rag.insert(content)
         
         # Log success
         add_activity_log(f"[+] Inserted content ({len(content)} chars) #{content_hash}")
