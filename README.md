@@ -8,7 +8,7 @@
         <a href='https://lightrag.github.io'><img src='https://img.shields.io/badge/Project-Page-Green'></a>
         <a href='https://youtu.be/oageL-1I0GE'><img src='https://badges.aleen42.com/src/youtube.svg'></a>
         <a href='https://arxiv.org/abs/2410.05779'><img src='https://img.shields.io/badge/arXiv-2410.05779-b31b1b'></a>
-        <a href='https://discord.gg/yF2MmDJyGJ'><img src='https://discordapp.com/api/guilds/1296348098003734629/widget.png?style=shield'></a>
+        <a href='https://discord.gg/E4HgTnck'><img src='https://discordapp.com/api/guilds/1296348098003734629/widget.png?style=shield'></a>
     </p>
      <p>
           <img src='https://img.shields.io/github/stars/hkuds/lightrag?color=green&style=social' />
@@ -29,7 +29,7 @@ This repository hosts the code of LightRAG. The structure of this code is based 
 - [x] [2024.10.29]🎯📢LightRAG now supports multiple file types, including PDF, DOC, PPT, and CSV via `textract`.
 - [x] [2024.10.20]🎯📢We’ve added a new feature to LightRAG: Graph Visualization.
 - [x] [2024.10.18]🎯📢We’ve added a link to a [LightRAG Introduction Video](https://youtu.be/oageL-1I0GE). Thanks to the author!
-- [x] [2024.10.17]🎯📢We have created a [Discord channel](https://discord.gg/mvsfu2Tg)! Welcome to join for sharing and discussions! 🎉🎉
+- [x] [2024.10.17]🎯📢We have created a [Discord channel](https://discord.gg/E4HgTnck)! Welcome to join for sharing and discussions! 🎉🎉
 - [x] [2024.10.16]🎯📢LightRAG now supports [Ollama models](https://github.com/HKUDS/LightRAG?tab=readme-ov-file#quick-start)!
 - [x] [2024.10.15]🎯📢LightRAG now supports [Hugging Face models](https://github.com/HKUDS/LightRAG?tab=readme-ov-file#quick-start)!
 
